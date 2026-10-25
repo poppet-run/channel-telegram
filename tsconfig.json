@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "Preserve",
+    "moduleResolution": "Bundler",
+    "lib": ["ESNext"],
+    "types": ["bun"],
+    "typeRoots": ["../poppet/node_modules/@types"],
+    "strict": true,
+    "noEmit": true,
+    "verbatimModuleSyntax": true,
+    "allowImportingTsExtensions": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "skipLibCheck": true,
+    "paths": {
+      "@poppet/gateway": ["../poppet/packages/gateway/src/index.ts"],
+      "effect": ["../poppet/packages/gateway/node_modules/effect/dist/index"]
+    }
+  },
+  "include": ["src/**/*.ts"]
+}

@@ -1,36 +1,75 @@
-import {
-  ChannelEnvironment,
-  ChannelError,
-  ChannelInput,
-  type ChannelRegistration,
-} from "@poppet/gateway";
-import { Effect, Redacted, Schema } from "effect";
+import { parseArgs } from "node:util";
+
+import { ChannelEnvironment, ChannelError, type ChannelRegistration } from "@poppet/gateway";
+import { Effect, Schema } from "effect";
 
 import { TelegramSettings, telegramSettings } from "#src/settings";
 
-const usage =
-  "Use gateway telegram setup <owner-id> <chat-id> [<home-conversation-id>] --key-stdin.";
+const setupHelp =
+  "setup --owner-id <id> --chat-id <id> [--home-conversation-id <id>] --bot-token <token>";
 
-export const telegram: ChannelRegistration = {
+const parseSetup = (args: ReadonlyArray<string>) =>
+  Effect.try({
+    try: () => {
+      if (args[0] !== "setup") throw new Error("Expected setup");
+
+      // Telegram group IDs start with "-", which parseArgs treats as another option.
+      const normalized: string[] = [];
+      for (let index = 1; index < args.length; index++) {
+        const arg = args[index]!;
+        const next = args[index + 1];
+        if (
+          (arg === "--chat-id" || arg === "--home-conversation-id") &&
+          next !== undefined &&
+          /^-[1-9][0-9]*(?::[1-9][0-9]*)?$/.test(next)
+        ) {
+          normalized.push(`${arg}=${next}`);
+          index++;
+        } else {
+          normalized.push(arg);
+        }
+      }
+
+      const { values, tokens } = parseArgs({
+        args: normalized,
+        options: {
+          "owner-id": { type: "string" },
+          "chat-id": { type: "string" },
+          "home-conversation-id": { type: "string" },
+          "bot-token": { type: "string" },
+        },
+        strict: true,
+        allowPositionals: false,
+        tokens: true,
+      });
+
+      const names = tokens.filter((token) => token.kind === "option").map((token) => token.name);
+
+      const required = ["owner-id", "chat-id", "bot-token"] as const;
+
+      if (new Set(names).size !== names.length || !required.every((name) => names.includes(name)))
+        throw new Error("Expected each required setup flag exactly once");
+
+      return values;
+    },
+    catch: () =>
+      new ChannelError({ reason: "configuration", message: `Use gateway telegram ${setupHelp}.` }),
+  });
+
+export const telegram = {
   id: "telegram",
   name: "Telegram",
-  setupHelp: "setup <owner-id> <chat-id> [<home-conversation-id>] --key-stdin",
+  setupHelp,
   setup: (args) =>
     Effect.gen(function* () {
-      if (
-        (args.length !== 4 && args.length !== 5) ||
-        args[0] !== "setup" ||
-        args.at(-1) !== "--key-stdin"
-      )
-        return yield* Effect.fail(new ChannelError({ reason: "configuration", message: usage }));
+      const values = yield* parseSetup(args);
       const environment = yield* ChannelEnvironment;
-      const input = yield* (yield* ChannelInput).readSecret;
 
       const settings = yield* Schema.decodeUnknownEffect(TelegramSettings)({
-        ownerId: args[1],
-        chatId: args[2],
-        homeConversationId: args.length === 5 ? args[3] : args[2],
-        token: Redacted.value(input),
+        ownerId: values["owner-id"],
+        chatId: values["chat-id"],
+        homeConversationId: values["home-conversation-id"] ?? values["chat-id"],
+        token: values["bot-token"],
       }).pipe(
         Effect.mapError(
           () =>
@@ -49,6 +88,6 @@ export const telegram: ChannelRegistration = {
   load: telegramSettings.loader((settings) =>
     import("#src/channel").then(({ telegramChannelLayer }) => telegramChannelLayer(settings)),
   ),
-};
+} satisfies ChannelRegistration;
 
 export default telegram;

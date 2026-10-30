@@ -63,15 +63,16 @@ Then list the entry point in `<POPPET_DATA_DIR>/config.json`:
 }
 ```
 
-Save the settings. The token is read from stdin, never from arguments:
+Save the settings with named flags:
 
 ```fish
 read --silent --prompt-str 'Telegram bot token: ' telegram_token
-printf '%s\n' $telegram_token | poppet gateway telegram setup <owner-id> <chat-id> [<home-conversation-id>] --key-stdin
+poppet gateway telegram setup --owner-id <id> --chat-id <id> --bot-token "$telegram_token"
 set -e telegram_token
 poppet gateway work
 ```
 
+Add `--home-conversation-id <chat-id>:<topic-id>` to use a forum topic as home.
 The home conversation defaults to the chat itself. All settings, including the
 token, are stored in `<POPPET_DATA_DIR>/channels/telegram.json` with `0600`
 permissions. Restart the worker after changing them.

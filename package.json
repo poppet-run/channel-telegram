@@ -12,11 +12,15 @@
     "./registration": "./src/registration.ts"
   },
   "scripts": {
+    "format": "bun ../poppet/node_modules/oxfmt/bin/oxfmt --config ../poppet/oxfmt.config.ts --write .",
+    "format:check": "bun ../poppet/node_modules/oxfmt/bin/oxfmt --config ../poppet/oxfmt.config.ts --check .",
+    "lint": "bun ../poppet/node_modules/oxlint/bin/oxlint --config ../poppet/oxlint.config.ts .",
     "typecheck": "bun check",
     "test": "bun test"
   },
   "peerDependencies": {
     "@poppet/gateway": "*",
     "effect": "4.0.4"
-  }
+  },
+  "packageManager": "bun@1.4.4"
 }

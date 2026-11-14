@@ -392,8 +392,6 @@ export const telegramChannelLayer = (
             ),
             Effect.asVoid,
           ),
-        conversation: (message) =>
-          conversation(message, "New conversation").pipe(Effect.map((result) => result.id)),
         naming: {
           sanitize: topicName,
           conversation,

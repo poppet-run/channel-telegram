@@ -187,6 +187,20 @@ describe("telegramChannelLayer", () => {
     ]);
   });
 
+  test.each(["-100500", "-100500:7"])(
+    "reuses conversation %s without creating or claiming its name",
+    async (conversationId) => {
+      const api = fakeApi([]);
+
+      const result = await run(api, (channel) =>
+        channel.naming.conversation({ ...source, conversationId }, "New title"),
+      );
+
+      expect(result).toEqual({ id: conversationId, managedName: null });
+      expect(api.calls.some((call) => call.method === "createForumTopic")).toBe(false);
+    },
+  );
+
   test("reports external topic renames", async () => {
     const api = fakeApi([
       {

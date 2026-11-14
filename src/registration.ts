@@ -15,9 +15,11 @@ const parseSetup = (args: ReadonlyArray<string>) =>
 
       // Telegram group IDs start with "-", which parseArgs treats as another option.
       const normalized: string[] = [];
+
       for (let index = 1; index < args.length; index++) {
         const arg = args[index]!;
         const next = args[index + 1];
+
         if (
           (arg === "--chat-id" || arg === "--home-conversation-id") &&
           next !== undefined &&

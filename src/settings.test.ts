@@ -24,6 +24,7 @@ describe.concurrent("settings", () => {
 
     try {
       expect(await Effect.runPromise(telegramSettings.load(directory))).toBeNull();
+
       const message = await setup(directory, [
         "setup",
         "--owner-id",
@@ -33,6 +34,7 @@ describe.concurrent("settings", () => {
         "--bot-token",
         token,
       ]);
+
       expect(message).not.toContain(token);
       const path = join(directory, "channels/telegram.json");
       expect((await stat(path)).mode & 0o777).toBe(0o600);
@@ -81,6 +83,7 @@ describe.concurrent("settings", () => {
     ),
   ])("setup rejects %s without replacing settings or exposing the token", async (_, args) => {
     const directory = await mkdtemp(join(tmpdir(), "poppet-telegram-flags-"));
+
     try {
       await setup(directory, [
         "setup",
@@ -92,6 +95,7 @@ describe.concurrent("settings", () => {
       ]);
       const path = join(directory, "channels/telegram.json");
       const before = await readFile(path, "utf8");
+
       const result = await Effect.runPromise(
         telegram
           .setup(args)
@@ -100,6 +104,7 @@ describe.concurrent("settings", () => {
             Effect.result,
           ),
       );
+
       expect(result).toHaveProperty("failure.reason", "configuration");
       expect(JSON.stringify(result)).not.toContain(token);
       expect(await readFile(path, "utf8")).toBe(before);

@@ -88,10 +88,21 @@ permissions. Restart the worker after changing them.
 
 ## Development
 
-The package resolves `@poppet/gateway` and `effect` from the sibling Poppet
-checkout through `tsconfig.json` paths, so there is nothing to install.
+Use Bun 1.4.4, as pinned in `mise.toml`, and keep a Poppet checkout on current
+main at `../poppet`. Install Poppet's dependencies there with
+`bun install --frozen-lockfile`. There is nothing to install in this repository.
+
+The package resolves `@poppet/gateway` and `effect` from that checkout through
+`tsconfig.json` paths. Formatting and linting also use Poppet's installed Oxfmt
+and Oxlint with its TypeScript configs and custom lint rules.
 
 ```fish
-bun check
-bun test
+bun run format:check
+bun run lint
+bun run typecheck
+bun run test
 ```
+
+Use `bun run format` to apply formatting. CI runs all four checks on pull
+requests and pushes to main through `poppet-run/workflows`, with a fresh sibling
+checkout of Poppet main.
